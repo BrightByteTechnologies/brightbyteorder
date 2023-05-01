@@ -1,4 +1,4 @@
-var basket = document.getElementById("basket");
+var basket = document.getElementsByClassName("basket")[0];
 var basketBtn = document.getElementById("basketBtn");
 var basketClose = document.getElementById("basket-close");
 var itemsInBasket = document.getElementById("items-in-basket");
@@ -8,33 +8,31 @@ var overlay = document.getElementById("basket-overlay");
 var basketCount = document.getElementById("basketCount");
 var removeBtn = document.getElementsByClassName("minusBtn");
 
-function escapeHtml(unsafe) {
-    return unsafe.replace(/[&<"']/g, function (match) {
-        switch (match) {
-            case "&":
-                return "&amp;";
-            case "<":
-                return "&lt;";
-            case ">":
-                return "&gt;";
-            case "\"":
-                return "&quot;";
-            case "\'":
-                return "&#039;";
-            default:
-                return match;
-        }
-    });
-}
+var products;
+var basketItems = {};
+
+jQuery.ajax({
+    type: "GET",
+    url: 'getProducts.php',
+    data: { functionName: 'getProducts' },
+    success: function (response) {
+        products = JSON.parse(response);
+    }
+});
 
 function order() {
     var itemName = event.currentTarget.querySelector(".item-name").textContent;
-    itemName = DOMPurify.sanitize(itemName); // Sanitize the itemName string
+    var itemDesc = event.currentTarget.querySelector(".item-description").textContent;
+
+    itemName = DOMPurify.sanitize(itemName); // Sanitize the strings
+    itemDesc = DOMPurify.sanitize(itemDesc);
+
     overlay.style.display = "block";
 
     // Create amount selection element
     const amountSele = document.createElement("div");
     amountSele.classList.add("amountSele");
+    amountSele.setAttribute("id", "toClose");
     amountSele.textContent = "Menge:";
 
     // Create the input element (Number)
@@ -65,28 +63,11 @@ function order() {
             alert("Eingabe kann nicht leer sein");
             return;
         }
-        
-        updateBasket(itemName, itemAmount);
 
-        // Visual effect
-        document.getElementById("basketBtn").classList.add("flash");
-        setTimeout(function () {
-            document.getElementById("basketBtn").classList.remove("flash");
-        }, 500);
+        updateBasket(itemName, itemDesc, itemAmount);
 
-        // Show notification
-        const notification = document.createElement('div');
-        notification.textContent = 'Item added to basket';
-        notification.classList.add('notification');
-        notification.classList.add('swipeup');
-        document.body.appendChild(notification);
-
-        // Remove notification after a delay
-        setTimeout(() => {
-            document.body.removeChild(notification);
-        }, 1000);
         // Close amount selection element
-        closeAmountSelection(amountSele);
+        closeElement();
     });
 
     amountSele.appendChild(amountSub);
@@ -94,70 +75,129 @@ function order() {
 }
 
 function openBasket() {
-    basket.classList.add("show");
+    basket.style.display = "block";
     overlay.style.display = "block";
+    basket.setAttribute("id", "toClose");
 }
 
-function closeBasket() {
-    basket.classList.remove("show");
-    overlay.style.display = "none";
-}
+function updateBasket(itemName, itemDesc, itemAmount) {
+    if (isInProducts(itemName, itemDesc)) {
+        var itemPrice = findEntry(itemName, itemDesc)["totalPrice"];
+        var parsedPrice = parseFloat(itemPrice.replace(',', '.'));
 
-function updateBasket(itemName, itemAmount) {
-    var items = document.querySelectorAll("#items-in-basket tr");
-    var itemFound = false;
+        var basketName = `${DOMPurify.sanitize(itemName)} | ${DOMPurify.sanitize(itemDesc)}`;
+        var itemFound = false;
 
-    for (var i = 0; i < items.length; i++) {
-        if (items[i].querySelector(".in-basket").textContent === itemName) {
-            var quantity = items[i].querySelector(".item-count");
-            quantity.textContent = parseInt(quantity.textContent) + itemAmount;
-            itemFound = true;
-            break;
+        for (var key in basketItems) {
+            if (key === basketName) {
+                basketItems[key].quantity += itemAmount;
+                basketItems[key].totalPrice += parsedPrice * itemAmount;
+                itemFound = true;
+                break;
+            }
         }
+
+        if (!itemFound) {
+            basketItems[basketName] = {
+                name: itemName,
+                description: itemDesc,
+                price: parsedPrice,
+                quantity: itemAmount,
+                totalPrice: parsedPrice * itemAmount
+            };
+        }
+
+        createNotification("Item zum Warenkorb hinzugefügt.");
+        flashBasket("white");
+        updateBasketCount();
+
+        // Create HTML elements for displaying the items in the basket
+        var itemsInBasket = document.getElementById("items-in-basket");
+        itemsInBasket.innerHTML = "";
+        for (var key in basketItems) {
+            var item = basketItems[key];
+            var itemRow = document.createElement("tr");
+
+            var itemNameCell = document.createElement("td");
+            itemNameCell.textContent = item.name + " | " + item.description;
+            itemRow.appendChild(itemNameCell);
+
+            var itemQuantityCell = document.createElement("td");
+            itemQuantityCell.textContent = item.quantity;
+            itemRow.appendChild(itemQuantityCell);
+
+            var itemPriceCell = document.createElement("td");
+            itemPriceCell.textContent = item.price;
+            itemRow.appendChild(itemPriceCell);
+
+            var itemTotalPriceCell = document.createElement("td");
+            itemTotalPriceCell.textContent = item.totalPrice;
+            itemRow.appendChild(itemTotalPriceCell);
+
+            // Create the button to remove item
+            var minusCell = document.createElement("button");
+            minusCell.textContent = "✖";
+            minusCell.setAttribute("id", "minusBtn");
+            minusCell.addEventListener("click", function () {
+                itemRow.remove();
+                updateBasketCount();
+            });
+            itemRow.appendChild(minusCell);
+
+            itemsInBasket.appendChild(itemRow);
+        }
+
+    } else {
+        createNotification("Kann nicht hinzugefügt werden!");
+        flashBasket("red");
     }
-
-    if (!itemFound) {
-        // Create the table
-        var item = document.createElement("tr");
-        // Create the name/amount of the item and add into the table
-        var nameCell = document.createElement("td");
-        nameCell.textContent = escapeHtml(itemName);
-        nameCell.classList.add("in-basket");
-        item.appendChild(nameCell);
-
-        var countCell = document.createElement("td");
-        countCell.textContent = itemAmount;
-        countCell.classList.add("item-count");
-        item.appendChild(countCell);
-
-        // Create the button to remove item
-        var minusCell = document.createElement("button");
-        minusCell.textContent = "✖";
-        minusCell.setAttribute("id", "minusBtn");
-        minusCell.addEventListener("click", function () {
-            item.remove();
-            updateBasketCount();
-        });
-        item.appendChild(minusCell);
-
-        document.getElementById("items-in-basket").appendChild(item);
-    }
-    updateBasketCount();
 }
 
 function updateBasketCount() {
     var count = 0;
-    var quantities = document.querySelectorAll(".item-count");
-    for (var i = 0; i < quantities.length; i++) {
-        count += parseInt(quantities[i].textContent);
+    for (var key in basketItems) {
+        count += basketItems[key].quantity;
     }
-    basketCount.textContent = count; // Update the basket count element
+    basketCount.textContent = count;
 }
 
-function closeAmountSelection(amountSele) {
-    if(amountSele !== undefined) {
-        amountSele.parentNode.removeChild(amountSele);
-        overlay.style.display = "none";
+function isInProducts(name, desc) {
+    return products.some(item => item.name === name && item.description === desc);
+}
+function findEntry(name, desc) {
+    return products.find(p => p.name === name && p.description === desc);
+}
+
+function flashBasket(color) {
+    // Visual effect
+    basketBtn.classList.add(`${color}-flash`);
+    setTimeout(function () {
+        basketBtn.classList.remove(`${color}-flash`);
+    }, 500);
+}
+
+function createNotification(textContent) {
+    var content = DOMPurify.sanitize(textContent);
+
+    const notification = document.createElement('div');
+    notification.textContent = content;
+    notification.classList.add('notification');
+    notification.classList.add('swipeup');
+    document.body.appendChild(notification);
+
+    // Remove notification after a delay
+    setTimeout(() => {
+        document.body.removeChild(notification);
+    }, 1000);
+}
+
+function closeElement() {
+    const closeElement = document.getElementById("toClose");
+    closeElement.style.display = "none";
+    overlay.style.display = "none";
+    closeElement.removeAttribute("id");
+    if (closeElement.className === "amountSele") {
+        closeElement.parentNode.removeChild(closeElement);
     }
 }
 
@@ -194,8 +234,8 @@ function resetConfirmation() {
         basket.removeChild(resetDiv);
         resetButton.removeAttribute("disabled", "");
     })
-
 }
+
 function resetBasket() {
     var items = document.querySelectorAll("#items-in-basket tr");
     for (var i = 0; i < items.length; i++) {
@@ -209,8 +249,8 @@ function remove() {
     parentRow.remove();
 }
 
-overlay.addEventListener("click", function() {
-    closeAmountSelection(document.getElementsByClassName("amountSele")[0]);
+overlay.addEventListener("click", function () {
+    closeElement();
 });
 
 payButton.addEventListener("click", function () {
@@ -232,5 +272,5 @@ basketBtn.addEventListener("click", function () {
 
 basketClose.addEventListener("click", function () {
     // Close basket
-    closeBasket();
+    closeElement();
 });

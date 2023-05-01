@@ -31,7 +31,7 @@ body {
   background-color: var(--logocolor-dark);
 }
 
-#basket {
+.basket {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -78,10 +78,6 @@ body {
   height: 100%;
   z-index: 99;
   background-color: rgba(66, 66, 66, 0.5);
-}
-
-#basket.show {
-  display: block;
 }
 
 #basket-header h2 {
@@ -293,17 +289,25 @@ input[type="submit"] {
   font-size: 20px;
 }
 
-.flash {
+.red-flash {
+  --flash-color: red;
+  animation: flash .5s ease;
+}
+
+.white-flash {
+  --flash-color: #608299;
   animation: flash .5s ease;
 }
 
 @keyframes flash {
   from {
     filter: brightness(200%);
+    background-color: var(--flash-color);
   }
 
   to {
     filter: brightness(100%);
+    background-color: #608299;
   }
 }
 

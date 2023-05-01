@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 $errorMessages = [
     '<h1>An error occurred!</h1> <p1>It seems like the QR-Code provided is invalid!<p1>',
     '<h1>An error occurred!</h1> <p1>The QR-Code has already been used!<p1>',
@@ -11,21 +13,43 @@ if (!isset($_SESSION['valid'])) {
         $token = $_GET['token'];
         $tableNo = $_GET['tableNo'];
 
-        include_once("checkToken.php");
-        $response = checkToken($token);
+        require_once("checkToken.php");
+        $tokenResponse = checkToken($token);
 
-        $data = json_decode($response, true);
+        $tokenData = json_decode($tokenResponse, true);
 
         $_SESSION['valid'] = false;
-        if ($data !== null) {
-            if (count($data) < 1) {
+        if ($tokenData !== null) {
+            if (count($tokenData) < 1) {
                 echo $errorMessages[0];
-            } elseif ($data[0]['used'] != 0) {
+            } elseif ($tokenData[0]['used'] != 0) {
                 echo $errorMessages[1];
-            } elseif ($data[0]['tableNo'] != $tableNo) {
+            } elseif ($tokenData[0]['tableNo'] != $tableNo) {
                 echo $errorMessages[2];
             } else {
                 $_SESSION['valid'] = true;
+                require_once("getProducts.php");
+                $productResponse = getProducts();
+                
+                $productData = json_decode($productResponse, true);
+
+                $itemList = "";
+                foreach ($productData as $item) {
+                    $id = $item['id'];
+                    $name = $item['name'];
+                    $description = $item['description'];
+                    $basePrice = $item['price'];
+                    $taxAmount = $item['taxAmount'];
+                    $totalPrice = $item['totalPrice'];
+                    $url = $item['url'];
+
+                    $itemList .= "<div class='item' onclick='order(event)'>";
+                    $itemList .= "<div class='content-top'> <img src='https://cdn.row-hosting.de/BBT/placeholder.png' class='item-image'> </div>";
+                    $itemList .= "<div class='content-bottom'>";
+                    $itemList .= "<p class='item-info'> <span class='item-name'>$name</span> <br> <span class='item-description'>$description</span> <br>";
+                    $itemList .= "<b class='item-price'>$totalPrice</b> €</p> </div> </div>";
+                }
+                $_SESSION['itemList'] = $itemList;
             }
         } else {
             echo $errorMessages[3];
@@ -48,6 +72,7 @@ if ($_SESSION['valid']) {
             @import url("css/root.css");
             @import url("css/order-style.css");
         </style>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.2/dist/purify.min.js"></script>
         <script src="./scripts/order-script.js" defer></script>
     </head>
@@ -60,7 +85,7 @@ if ($_SESSION['valid']) {
                     <span id="basketCount">0</span>
                 </button>
                 <div id="basket-overlay"></div>
-                <div id="basket">
+                <div class="basket">
                     <div id="basket-header">
                         <button id="basket-close">&#10006;</button>
                         <h2>Warenkorb</h2>
@@ -70,6 +95,8 @@ if ($_SESSION['valid']) {
                             <tr>
                                 <th>Item</th>
                                 <th>Menge</th>
+                                <th>Preis</th>
+                                <th>Gesamt</th>
                                 <th>Entfernen</th>
                             </tr>
                         </thead>
@@ -84,57 +111,9 @@ if ($_SESSION['valid']) {
             </div>
         </div>
         <div class="menu-items">
-            <div class="item" id="1" onclick="order(event)">
-                <div class="content-top">
-                    <img src="https://cdn.row-hosting.de/BBT/placeholder.png" class="item-image">
-                </div>
-                <div class="content-bottom">
-                    <p class="item-info"><span class='item-name'>Cola</span> <br> <b class='item-price'>1.23</b> €</p>
-                </div>
-            </div>
-            <div class="item" id="2" onclick="order(event)">
-                <div class="content-top">
-                    <img src="https://cdn.row-hosting.de/BBT/placeholder.png" class="item-image">
-                </div>
-                <div class="content-bottom">
-                    <p class="item-info"><span class='item-name'>Cola Vanille</span> <br> <b class='item-price'>1.23</b> €
-                    </p>
-                </div>
-            </div>
-            <div class="item" id="3" onclick="order(event)">
-                <div class="content-top">
-                    <img src="https://cdn.row-hosting.de/BBT/placeholder.png" class="item-image">
-                </div>
-                <div class="content-bottom">
-                    <p class="item-info"><span class='item-name'>Fanta</span> <br> <b class='item-price'>1.23</b> €</p>
-                </div>
-            </div>
-            <div class="item" id="4" onclick="order(event)">
-                <div class="content-top">
-                    <img src="https://cdn.row-hosting.de/BBT/placeholder.png" class="item-image">
-                </div>
-                <div class="content-bottom">
-                    <p class="item-info"><span class='item-name'>Fanta Mango</span> <br> <b class='item-price'>1.23</b> €
-                    </p>
-                </div>
-            </div>
-            <div class="item" id="5" onclick="order(event)">
-                <div class="content-top">
-                    <img src="https://cdn.row-hosting.de/BBT/placeholder.png" class="item-image">
-                </div>
-                <div class="content-bottom">
-                    <p class="item-info"><span class='item-name'>Sprite</span> <br> <b class='item-price'>1.23</b> €</p>
-                </div>
-            </div>
-            <div class="item" id="6" onclick="order(event)">
-                <div class="content-top">
-                    <img src="https://cdn.row-hosting.de/BBT/placeholder.png" class="item-image">
-                </div>
-                <div class="content-bottom">
-                    <p class="item-info"><span class='item-name'>Energy Drink</span> <br> <b class='item-price'>1.23</b> €
-                    </p>
-                </div>
-            </div>
+            <?php
+                echo $_SESSION['itemList'];
+            ?>
         </div>
     </body>
 

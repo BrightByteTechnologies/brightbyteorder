@@ -2,12 +2,12 @@
 function checkToken($token) {
 // Token von der methode lesen
 if (isset($token)) {
-    $restaurantId = "test_restaurant";
-
     $config = file_get_contents('config.json');
     $data = json_decode($config, true);
 
     $API_KEY = $data['API'][1]['key'];
+    $restaurantId = $data['RESTAURANT']['id'];
+
     $ch = curl_init("http://localhost:3000/qrcodes?restaurant_id=".$restaurantId. "&token=".$token);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
