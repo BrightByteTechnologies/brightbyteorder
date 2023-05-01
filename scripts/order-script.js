@@ -142,7 +142,7 @@ function updateBasket(itemName, itemDesc, itemAmount) {
             // Create the button to remove item
             var minusCell = document.createElement("button");
             minusCell.textContent = "✖";
-            minusCell.setAttribute("id", "minusBtn");
+            minusCell.setAttribute("class", "minusBtn");
             minusCell.addEventListener("click", function () {
                 itemRow.remove();
                 delete basketItems[key];

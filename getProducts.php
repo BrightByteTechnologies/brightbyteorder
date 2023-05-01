@@ -19,6 +19,7 @@ function getProducts()
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('api-key: ' . $API_KEY));
 
         $response = curl_exec($ch);
+        print_r($response);
         curl_close($ch);
         
         $products = json_decode($response, true);

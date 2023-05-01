@@ -17,7 +17,6 @@ if (!isset($_SESSION['valid'])) {
         $tokenResponse = checkToken($token);
 
         $tokenData = json_decode($tokenResponse, true);
-
         $_SESSION['valid'] = false;
         if ($tokenData !== null) {
             if (count($tokenData) < 1) {

@@ -151,7 +151,7 @@ body {
 #basket-items th,
 #basket-items td,
 .in-basket,
-#minusBtn {
+.minusBtn {
   text-align: center;
   padding: 5px;
 }
@@ -168,7 +168,7 @@ body {
   height: 100%;
 }
 
-#minusBtn {
+.minusBtn {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -183,11 +183,11 @@ body {
   height: 31px;
 }
 
-#minusBtn:active {
+.minusBtn:active {
   background-color: var(--logocolor-light);
 }
 
-#minusBtn:hover {
+.minusBtn:hover {
   color: red;
 }
 
