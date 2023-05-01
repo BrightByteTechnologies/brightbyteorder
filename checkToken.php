@@ -8,7 +8,7 @@ if (isset($token)) {
     $API_KEY = $data['API'][1]['key'];
     $restaurantId = $data['RESTAURANT']['id'];
 
-    $ch = curl_init("http://localhost:3000/qrcodes?restaurant_id=".$restaurantId. "&token=".$token);
+    $ch = curl_init("api.brightbytetechnologies.de/qrcodes?restaurant_id=".$restaurantId. "&token=".$token);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
     curl_setopt($ch, CURLOPT_HTTPHEADER, array('api-key: ' . $API_KEY));

@@ -82,7 +82,8 @@ function openBasket() {
 
 function updateBasket(itemName, itemDesc, itemAmount) {
     if (isInProducts(itemName, itemDesc)) {
-        var itemPrice = findEntry(itemName, itemDesc)["totalPrice"];
+        var item = findEntry(itemName, itemDesc);
+        var itemPrice = item["totalPrice"];
         var parsedPrice = parseFloat(itemPrice.replace(',', '.'));
 
         var basketName = `${DOMPurify.sanitize(itemName)} | ${DOMPurify.sanitize(itemDesc)}`;
@@ -103,7 +104,8 @@ function updateBasket(itemName, itemDesc, itemAmount) {
                 description: itemDesc,
                 price: parsedPrice,
                 quantity: itemAmount,
-                totalPrice: parsedPrice * itemAmount
+                totalPrice: parsedPrice * itemAmount,
+                hashCode: item["hashCode"]
             };
         }
 
@@ -114,36 +116,43 @@ function updateBasket(itemName, itemDesc, itemAmount) {
         // Create HTML elements for displaying the items in the basket
         var itemsInBasket = document.getElementById("items-in-basket");
         itemsInBasket.innerHTML = "";
+        var durchgang = 0;
         for (var key in basketItems) {
+            durchgang++;
             var item = basketItems[key];
             var itemRow = document.createElement("tr");
-
+            itemRow.setAttribute("id", item.hashCode);
+        
             var itemNameCell = document.createElement("td");
             itemNameCell.textContent = item.name + " | " + item.description;
             itemRow.appendChild(itemNameCell);
-
+        
             var itemQuantityCell = document.createElement("td");
             itemQuantityCell.textContent = item.quantity;
             itemRow.appendChild(itemQuantityCell);
-
+        
             var itemPriceCell = document.createElement("td");
             itemPriceCell.textContent = item.price;
             itemRow.appendChild(itemPriceCell);
-
+        
             var itemTotalPriceCell = document.createElement("td");
             itemTotalPriceCell.textContent = item.totalPrice;
             itemRow.appendChild(itemTotalPriceCell);
-
+        
             // Create the button to remove item
             var minusCell = document.createElement("button");
             minusCell.textContent = "✖";
             minusCell.setAttribute("id", "minusBtn");
             minusCell.addEventListener("click", function () {
                 itemRow.remove();
+                delete basketItems[key];
                 updateBasketCount();
             });
+            console.log("Durchgang:", durchgang);
+            console.log(itemRow);
+            console.log(minusCell);
             itemRow.appendChild(minusCell);
-
+        
             itemsInBasket.appendChild(itemRow);
         }
 
@@ -237,9 +246,9 @@ function resetConfirmation() {
 }
 
 function resetBasket() {
-    var items = document.querySelectorAll("#items-in-basket tr");
-    for (var i = 0; i < items.length; i++) {
-        items[i].remove();
+    for(var key in basketItems) {
+        document.getElementById(basketItems[key].hashCode).remove();
+        delete basketItems[key];
     }
     updateBasketCount();
 }
