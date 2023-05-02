@@ -116,45 +116,44 @@ function updateBasket(itemName, itemDesc, itemAmount) {
         // Create HTML elements for displaying the items in the basket
         var itemsInBasket = document.getElementById("items-in-basket");
         itemsInBasket.innerHTML = "";
-        var durchgang = 0;
         for (var key in basketItems) {
-            durchgang++;
             var item = basketItems[key];
             var itemRow = document.createElement("tr");
             itemRow.setAttribute("id", item.hashCode);
-        
+          
             var itemNameCell = document.createElement("td");
             itemNameCell.textContent = item.name + " | " + item.description;
             itemRow.appendChild(itemNameCell);
-        
+          
             var itemQuantityCell = document.createElement("td");
             itemQuantityCell.textContent = item.quantity;
             itemRow.appendChild(itemQuantityCell);
-        
+          
             var itemPriceCell = document.createElement("td");
             itemPriceCell.textContent = item.price;
             itemRow.appendChild(itemPriceCell);
-        
+          
             var itemTotalPriceCell = document.createElement("td");
             itemTotalPriceCell.textContent = item.totalPrice;
             itemRow.appendChild(itemTotalPriceCell);
-        
+          
             // Create the button to remove item
             var minusCell = document.createElement("button");
             minusCell.textContent = "✖";
             minusCell.setAttribute("class", "minusBtn");
-            minusCell.addEventListener("click", function () {
+          
+            // Create a closure around the event listener function to capture the current value of key
+            minusCell.addEventListener("click", (function(key, itemRow) {
+              return function () {
                 itemRow.remove();
                 delete basketItems[key];
                 updateBasketCount();
-            });
-            console.log("Durchgang:", durchgang);
-            console.log(itemRow);
-            console.log(minusCell);
+              }
+            })(key, itemRow));
             itemRow.appendChild(minusCell);
-        
+          
             itemsInBasket.appendChild(itemRow);
-        }
+          }
 
     } else {
         createNotification("Kann nicht hinzugefügt werden!");
@@ -246,7 +245,7 @@ function resetConfirmation() {
 }
 
 function resetBasket() {
-    for(var key in basketItems) {
+    for (var key in basketItems) {
         document.getElementById(basketItems[key].hashCode).remove();
         delete basketItems[key];
     }
