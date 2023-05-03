@@ -6,7 +6,8 @@ $errorMessages = [
     '<h1>An error occurred!</h1> <p1>It seems like the QR-Code provided is invalid!<p1>',
     '<h1>An error occurred!</h1> <p1>The QR-Code has already been used!<p1>',
     '<h1>An error occurred!</h1> <p1>QR-Code is not registered for this table!<p1>',
-    '<h1>An error occurred! Error 505</h1> <p1>Internal Server Error!<p1>'
+    '<h1>An error occurred! Error 505</h1> <p1>Internal Server Error!<p1>',
+    '<h1>An error occurred! Error 404</h1> <p1>No Token found!<p1>'
 ];
 if (!isset($_SESSION['valid'])) {
     if (isset($_GET['token']) && isset($_GET['tableNo'])) {
@@ -43,7 +44,7 @@ if (!isset($_SESSION['valid'])) {
                     $url = $item['url'];
 
                     $itemList .= "<div class='item' onclick='order(event)'>";
-                    $itemList .= "<div class='content-top'> <img src='https://cdn.row-hosting.de/BBT/placeholder.png' class='item-image'> </div>";
+                    $itemList .= "<div class='content-top'> <img src='$url' class='item-image'> </div>";
                     $itemList .= "<div class='content-bottom'>";
                     $itemList .= "<p class='item-info'> <span class='item-name'>$name</span> <br> <span class='item-description'>$description</span> <br>";
                     $itemList .= "<b class='item-price'>$totalPrice</b> €</p> </div> </div>";
@@ -53,6 +54,8 @@ if (!isset($_SESSION['valid'])) {
         } else {
             echo $errorMessages[3];
         }
+    } else {
+        echo $errorMessages[4];
     }
 }
 
