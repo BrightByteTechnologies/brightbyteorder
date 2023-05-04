@@ -67,6 +67,7 @@ if ($_SESSION['valid']) {
     <html>
 
     <head>
+        <title>Bestellung - BrightByte Technologies</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="shortcut Icon" href="https://cdn.row-hosting.de/BBT/Website/bb-logo.png">
 
