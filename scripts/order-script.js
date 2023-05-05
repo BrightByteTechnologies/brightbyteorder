@@ -49,6 +49,7 @@ function order() {
     amountSub = document.createElement("input");
     amountSub.setAttribute("value", "In den Warenkorb");
     amountSub.setAttribute("type", "submit");
+    amountSub.setAttribute("id", "amountSubmit");
 
     amountSub.addEventListener("click", function () {
         // Get selected amount and update basket
@@ -122,8 +123,12 @@ function updateBasket(itemName, itemDesc, itemAmount) {
             itemRow.setAttribute("id", item.hashCode);
           
             var itemNameCell = document.createElement("td");
-            itemNameCell.textContent = item.name + " | " + item.description;
+            itemNameCell.textContent = item.name;
             itemRow.appendChild(itemNameCell);
+
+            var itemDescCell = document.createElement("td");
+            itemDescCell.textContent = item.description;
+            itemRow.appendChild(itemDescCell);
           
             var itemQuantityCell = document.createElement("td");
             itemQuantityCell.textContent = item.quantity;
