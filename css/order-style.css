@@ -135,6 +135,11 @@ body {
   background-color: red;
 }
 
+#reset-button:hover,
+.reset input[type="submit"]:nth-child(2n):hover {
+  background-color: darkred;
+}
+
 #resetSpan {
   font-size: xx-large;
   font-weight: bold;
@@ -144,12 +149,8 @@ body {
   margin-top: 2% !important;
 }
 
-#pay-button:hover {
+#pay-button:hover, #resetCancel:hover {
   background-color: darkgreen;
-}
-
-#reset-button:hover {
-  background-color: darkred;
 }
 
 #basket-items {
@@ -205,8 +206,8 @@ body {
   display: grid;
   justify-content: center;
   align-items: center;
-  width: 350px;
-  height: 200px;
+  width: 250px;
+  height: 150px;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -235,6 +236,10 @@ body {
   font-size: medium;
   width: 180px;
   height: 100%;
+}
+
+#amountSubmit:hover {
+  background-color: darkgreen;
 }
 
 .reset {
