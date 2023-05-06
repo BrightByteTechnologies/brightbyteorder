@@ -97,6 +97,7 @@ if ($_SESSION['valid']) {
                         <thead>
                             <tr>
                                 <th>Item</th>
+                                <th>Beschreibung</th>
                                 <th>Menge</th>
                                 <th>Preis</th>
                                 <th>Gesamt</th>
