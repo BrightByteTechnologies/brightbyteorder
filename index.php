@@ -108,8 +108,8 @@ if ($_SESSION['valid']) {
                         </tbody>
                     </table>
                     <div id="basket-footer">
-                        <button id="pay-button">Bezahlen</button>
-                        <button id="reset-button">Entfernen</button>
+                        <button id="pay-button">Bestellen</button>
+                        <button id="reset-button">Leeren</button>
                     </div>
                 </div>
             </div>
