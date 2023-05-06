@@ -1,4 +1,6 @@
 <?php
+session_set_cookie_params(3 * 3600); 
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
@@ -14,23 +16,23 @@ if (!isset($_SESSION['valid'])) {
         $token = $_GET['token'];
         $tableNo = $_GET['tableNo'];
 
-        require_once("checkToken.php");
+        require_once("tokenUtils.php");
         $tokenResponse = checkToken($token);
 
         $tokenData = json_decode($tokenResponse, true);
         $_SESSION['valid'] = false;
         if ($tokenData !== null) {
             if (count($tokenData) < 1) {
-                echo $errorMessages[0];
+                echo $_SESSION['error'] = $errorMessages[0];
             } elseif ($tokenData[0]['used'] != 0) {
-                echo $errorMessages[1];
+                echo $_SESSION['error'] = $errorMessages[1];
             } elseif ($tokenData[0]['tableNo'] != $tableNo) {
-                echo $errorMessages[2];
+                echo $_SESSION['error'] = $errorMessages[2];
             } else {
                 $_SESSION['valid'] = true;
                 require_once("getProducts.php");
                 $productResponse = getProducts();
-                
+                $useTokenResponse = useToken($token);
                 $productData = json_decode($productResponse, true);
 
                 $itemList = "";
@@ -52,11 +54,13 @@ if (!isset($_SESSION['valid'])) {
                 $_SESSION['itemList'] = $itemList;
             }
         } else {
-            echo $errorMessages[3];
+            echo $_SESSION['error'] = $errorMessages[3];
         }
     } else {
-        echo $errorMessages[4];
+        echo $_SESSION['error'] = $errorMessages[4];
     }
+} else {
+    echo $_SESSION['error'];
 }
 
 ?>
