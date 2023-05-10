@@ -13,7 +13,7 @@ var basketItems = {};
 
 jQuery.ajax({
     type: "GET",
-    url: 'getProducts.php',
+    url: 'utils.php',
     data: { functionName: 'getProducts' },
     success: function (response) {
         products = JSON.parse(response);
@@ -56,7 +56,7 @@ function order() {
         var itemAmount = parseInt(document.getElementById("itemAmount").value);
         if (itemAmount > 0 && itemAmount != NaN) {
             if (parseInt(basketCount.textContent) + itemAmount > 20) {
-                closeAmountSelection(amountSele);
+                closeElement();
                 alert("Maximal 20 Getränke pro Person!");
                 return;
             }

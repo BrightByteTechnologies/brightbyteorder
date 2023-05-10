@@ -62,7 +62,7 @@ body {
   font-weight: bolder;
   color: black;
   position: relative;
-  bottom: 22%;
+  bottom: 28%;
 }
 
 .notification {
@@ -297,7 +297,7 @@ body {
 
 .content-bottom {
   text-align: center;
-  margin-top: -2%;
+  margin-top: -3.5%;
 }
 
 .item-info {
