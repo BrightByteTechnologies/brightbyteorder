@@ -12,7 +12,7 @@ var products;
 var basketItems = {};
 
 jQuery.ajax({
-    type: "GET",
+    type: "POST",
     url: 'utils.php',
     data: { functionName: 'getProducts' },
     success: function (response) {
@@ -66,7 +66,6 @@ function order() {
         }
 
         updateBasket(itemName, itemDesc, itemAmount);
-
         // Close amount selection element
         closeElement();
     });
@@ -87,20 +86,22 @@ function updateBasket(itemName, itemDesc, itemAmount) {
         var itemPrice = item["totalPrice"];
         var parsedPrice = parseFloat(itemPrice.replace(',', '.'));
 
-        var basketName = `${DOMPurify.sanitize(itemName)} | ${DOMPurify.sanitize(itemDesc)}`;
+        var itemIndex = Object.keys(basketItems).length + 1; // Get the next available index
+
         var itemFound = false;
 
-        for (var key in basketItems) {
-            if (key === basketName) {
-                basketItems[key].quantity += itemAmount;
-                basketItems[key].totalPrice += parsedPrice * itemAmount;
+        for (var i = 1; i < Object.keys(basketItems).length + 1; i++) {
+            if (basketItems[i].name === itemName && basketItems[i].description === itemDesc) {
+                basketItems[i].quantity += itemAmount;
+                basketItems[i].totalPrice += parsedPrice * itemAmount;
                 itemFound = true;
                 break;
             }
         }
 
         if (!itemFound) {
-            basketItems[basketName] = {
+            basketItems[itemIndex] = {
+                id: item["id"],
                 name: itemName,
                 description: itemDesc,
                 price: parsedPrice,
@@ -110,7 +111,7 @@ function updateBasket(itemName, itemDesc, itemAmount) {
             };
         }
 
-        createNotification("Item zum Warenkorb hinzugefügt.");
+        createNotification("Item zum Warenkorb hinzugefügt.", "green");
         flashBasket("white");
         updateBasketCount();
 
@@ -121,7 +122,7 @@ function updateBasket(itemName, itemDesc, itemAmount) {
             var item = basketItems[key];
             var itemRow = document.createElement("tr");
             itemRow.setAttribute("id", item.hashCode);
-          
+
             var itemNameCell = document.createElement("td");
             itemNameCell.textContent = item.name;
             itemRow.appendChild(itemNameCell);
@@ -129,39 +130,39 @@ function updateBasket(itemName, itemDesc, itemAmount) {
             var itemDescCell = document.createElement("td");
             itemDescCell.textContent = item.description;
             itemRow.appendChild(itemDescCell);
-          
+
             var itemQuantityCell = document.createElement("td");
             itemQuantityCell.textContent = item.quantity;
             itemRow.appendChild(itemQuantityCell);
-          
+
             var itemPriceCell = document.createElement("td");
             itemPriceCell.textContent = item.price;
             itemRow.appendChild(itemPriceCell);
-          
+
             var itemTotalPriceCell = document.createElement("td");
             itemTotalPriceCell.textContent = item.totalPrice;
             itemRow.appendChild(itemTotalPriceCell);
-          
+
             // Create the button to remove item
             var minusCell = document.createElement("button");
             minusCell.textContent = "✖";
             minusCell.setAttribute("class", "minusBtn");
-          
+
             // Create a closure around the event listener function to capture the current value of key
-            minusCell.addEventListener("click", (function(key, itemRow) {
-              return function () {
-                itemRow.remove();
-                delete basketItems[key];
-                updateBasketCount();
-              }
+            minusCell.addEventListener("click", (function (key, itemRow) {
+                return function () {
+                    itemRow.remove();
+                    delete basketItems[key];
+                    updateBasketCount();
+                }
             })(key, itemRow));
             itemRow.appendChild(minusCell);
-          
+
             itemsInBasket.appendChild(itemRow);
-          }
+        }
 
     } else {
-        createNotification("Kann nicht hinzugefügt werden!");
+        createNotification("Kann nicht hinzugefügt werden!", "red");
         flashBasket("red");
     }
 }
@@ -189,13 +190,18 @@ function flashBasket(color) {
     }, 500);
 }
 
-function createNotification(textContent) {
+function createNotification(textContent, textColor) {
     var content = DOMPurify.sanitize(textContent);
 
     const notification = document.createElement('div');
     notification.textContent = content;
     notification.classList.add('notification');
     notification.classList.add('swipeup');
+
+    if (textColor !== null) {
+        notification.style.color = textColor; // Set the text color
+    }
+
     document.body.appendChild(notification);
 
     // Remove notification after a delay
@@ -267,10 +273,35 @@ overlay.addEventListener("click", function () {
 });
 
 payButton.addEventListener("click", function () {
-    // Open payment window
-    alert("Payment window opened.");
-    // Reset basket
-    resetBasket();
+    if (Object.keys(basketItems).length !== 0) {
+        // Send basketItems to backend function
+        jQuery.ajax({
+            type: "POST",
+            url: 'utils.php',
+            data: {
+                functionName: 'placeOrder',
+                basketItems: JSON.stringify(basketItems)
+            },
+            success: function (response) {
+                try {
+                    JSON.parse(response);
+                    if (response.status !== 200) {
+                        createNotification(response.message, "red");
+                    } else {
+                        createNotification(response.message, "green");
+                        // Reset basket
+                        resetBasket();
+                    }
+                } catch (error) {
+                    console.error("Couldn't parse response!");
+                    createNotification("Internal Server error", "red");
+                }
+            }
+        });
+
+    } else {
+        createNotification("Warenkorb ist leer", "red");
+    }
 });
 
 resetButton.addEventListener("click", function () {

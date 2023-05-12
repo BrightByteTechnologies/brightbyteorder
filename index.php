@@ -2,28 +2,27 @@
 $errorMessages = [
     // Error message for invalid QR-Code
     '<h1>An error occurred!</h1> <p1>It seems like the QR-Code provided is invalid!<p1>',
-    
+
     // Error message for already used QR-Code
     '<h1>An error occurred!</h1> <p1>The QR-Code has already been used!<p1>',
-    
+
     // Error message for QR-Code not registered for the table
     '<h1>An error occurred!</h1> <p1>QR-Code is not registered for this table!<p1>',
-    
+
     // Error message for internal server error
     '<h1>An error occurred! Error 505</h1> <p1>Internal Server Error!<p1>',
-    
+
     // Error message for no token found
-    '<h1>An error occurred! Error 404</h1> <p1>No Token found!<p1>' 
+    '<h1>An error occurred! Error 404</h1> <p1>No Token found!<p1>'
 ];
 
 if (session_status() == PHP_SESSION_NONE) {
+    // 3600 Seconds is equal to one hour
+    $sessionTimeout = 3600 * 3;
+
+    session_set_cookie_params($sessionTimeout); // Set the session cookie parameters
     session_start(); // Start the session if it's not already started
 }
-
-// 3600 Seconds is equal to one hour
-$sessionTimeout = 3600 * 3;
-
-session_set_cookie_params($sessionTimeout); // Set the session cookie parameters
 
 if (!isset($_SESSION['valid'])) {
     if (isset($_GET['token']) && isset($_GET['tableNo'])) {
@@ -46,6 +45,7 @@ if (!isset($_SESSION['valid'])) {
                 $_SESSION['valid'] = true; // Set the session variable to indicate valid token
                 $productResponse = getProducts(); // Get the product data
                 $useTokenResponse = useToken($token); // Mark the token as used
+                $_SESSION['token'] = $token;
                 $productData = json_decode($productResponse, true); // Decode the product data
 
                 $itemList = "";
@@ -73,7 +73,7 @@ if (!isset($_SESSION['valid'])) {
     } else {
         echo $_SESSION['error'] = $errorMessages[4]; // Display error message for no token found
     }
-} else {
+} elseif (isset($_SESSION['error'])) {
     echo $_SESSION['error']; // Display any existing error message in the session
 }
 
