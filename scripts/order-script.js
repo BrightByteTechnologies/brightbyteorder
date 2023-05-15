@@ -111,7 +111,7 @@ function updateBasket(itemName, itemDesc, itemAmount) {
             };
         }
 
-        createNotification("Item zum Warenkorb hinzugefügt.", "green");
+        createNotification("Item zum Warenkorb hinzugefügt.", "black");
         flashBasket("white");
         updateBasketCount();
 
@@ -207,7 +207,7 @@ function createNotification(textContent, textColor) {
     // Remove notification after a delay
     setTimeout(() => {
         document.body.removeChild(notification);
-    }, 1000);
+    }, 2000);
 }
 
 function closeElement() {
@@ -272,8 +272,12 @@ overlay.addEventListener("click", function () {
     closeElement();
 });
 
+var lastOrderTime = null;
+var TEN_MINUTES_IN_MS = 10 * 60 * 1000; // 10 minutes in milliseconds
+
 payButton.addEventListener("click", function () {
     if (Object.keys(basketItems).length !== 0) {
+
         // Send basketItems to backend function
         jQuery.ajax({
             type: "POST",
@@ -284,21 +288,21 @@ payButton.addEventListener("click", function () {
             },
             success: function (response) {
                 try {
-                    JSON.parse(response);
-                    if (response.status !== 200) {
-                        createNotification(response.message, "red");
-                    } else {
-                        createNotification(response.message, "green");
+                    if (response === "OK") {
+                        createNotification("Bestellung abgesendet", "green");
                         // Reset basket
                         resetBasket();
+                    } else {
+                        responseData = JSON.parse(response)
+                        createNotification(responseData.message, "red");
                     }
                 } catch (error) {
                     console.error("Couldn't parse response!");
+                    console.error(response);
                     createNotification("Internal Server error", "red");
                 }
             }
         });
-
     } else {
         createNotification("Warenkorb ist leer", "red");
     }

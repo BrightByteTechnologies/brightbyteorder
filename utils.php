@@ -119,6 +119,22 @@ function getProducts()
 function placeOrder()
 {
     if (isset($_SESSION['valid']) && $_SESSION['valid']) {
+        // Check the time elapsed since the last order
+        $currentTime = time();
+        $lastOrderTime = isset($_SESSION['lastOrderTime']) ? $_SESSION['lastOrderTime'] : 0;
+        $elapsedTime = $currentTime - $lastOrderTime;
+        $minTimeBetweenOrders = 1 * 60; // 10 minutes in seconds
+
+        $init = $minTimeBetweenOrders - $elapsedTime;
+        $minutes = floor(($init / 60) % 60);
+        if ($elapsedTime < $minTimeBetweenOrders) {
+            $data = array(
+                'status' => 400,
+                'message' => 'Please wait for ' . ($minutes) . ' minutes before placing another order.'
+            );
+            return json_encode($data);
+        }
+
         $config = file_get_contents('config.json');
         $data = json_decode($config, true);
 
@@ -129,8 +145,8 @@ function placeOrder()
         $totalAmount = 0;
 
         for ($i = 0; $i < count($basketItems); $i++) {
-            if (isInProducts($basketItems[$i+1]['name'], $basketItems[$i+1]['description'])) {
-                $totalAmount += $basketItems[$i+1]['totalPrice'];
+            if (isInProducts($basketItems[$i + 1]['name'], $basketItems[$i + 1]['description'])) {
+                $totalAmount += $basketItems[$i + 1]['totalPrice'];
             } else {
                 $data = array(
                     'status' => 400,
@@ -158,13 +174,18 @@ function placeOrder()
 
         $API_KEY = $data['API'][7]['key'];
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'api.brightbytetechnologies/orders/place');
+        curl_setopt($ch, CURLOPT_URL, 'localhost:3000/orders/place');
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($jsonData));
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('api-key: ' . $API_KEY, 'Content-Type: application/json'));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
         curl_close($ch);
+
+        if ($response === 'OK') {
+            // Update the last order time in the session
+            $_SESSION['lastOrderTime'] = $currentTime;
+        }
 
         return $response;
     } else {
