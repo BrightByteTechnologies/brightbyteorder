@@ -174,7 +174,7 @@ function placeOrder()
 
         $API_KEY = $data['API'][7]['key'];
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'localhost:3000/orders/place');
+        curl_setopt($ch, CURLOPT_URL, 'api.brightbytetechnologies.de/orders/place');
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($jsonData));
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('api-key: ' . $API_KEY, 'Content-Type: application/json'));
