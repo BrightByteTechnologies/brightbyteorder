@@ -408,6 +408,7 @@ body {
   .item-info {
     font-size: medium;
   }
+
   .order-basket button {
     font-size: large;
     color: #fff;
@@ -427,6 +428,10 @@ body {
     font-size: x-small;
   }
 
+  #basketCount {
+    bottom: 43%;
+  }
+
   .amountSele {
     display: grid;
     justify-content: center;
@@ -444,6 +449,7 @@ body {
     border-radius: 4px;
     z-index: 999;
   }
+
   #itemAmount {
     top: 0;
     height: 65%;
