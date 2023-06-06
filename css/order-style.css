@@ -1,4 +1,5 @@
 body {
+  font-family: 'Bree Serif', serif !important;
   background-color: var(--logocolor-light);
   margin: 0;
 }

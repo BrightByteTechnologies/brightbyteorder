@@ -86,7 +86,9 @@ if ($_SESSION['valid']) {
         <title>Bestellung - BrightByte Technologies</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="shortcut Icon" href="https://cdn.row-hosting.de/BBT/Website/bb-logo.png">
-
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Bree+Serif&display=swap" rel="stylesheet">
         <style>
             @import url("css/root.css");
             @import url("css/order-style.css");
