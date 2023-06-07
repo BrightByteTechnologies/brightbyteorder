@@ -38,7 +38,7 @@ function checkToken($token)
 
         $API_KEY = $data['API'][1]['key'];
 
-        $ch = curl_init("api.brightbytetechnologies.de/qrcodes?restaurant_id=" . $restaurantId . "&token=" . $token);
+        $ch = curl_init("localhost:3000/qrcodes?restaurant_id=" . $restaurantId . "&token=" . $token);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('api-key: ' . $API_KEY));
@@ -72,7 +72,7 @@ function useToken($token)
     $jsonData = json_encode($data);
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'api.brightbytetechnologies.de/qrcodes/use');
+    curl_setopt($ch, CURLOPT_URL, 'localhost:3000/qrcodes/use');
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
     curl_setopt($ch, CURLOPT_HTTPHEADER, array('api-key: ' . $API_KEY, 'Content-Type: application/json'));

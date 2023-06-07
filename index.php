@@ -33,11 +33,13 @@ if (!isset($_SESSION['valid'])) {
         $tokenResponse = checkToken($token); // Check the validity of the token
 
         $tokenData = json_decode($tokenResponse, true); // Decode the token response
+        
         $_SESSION['valid'] = false; // Initialize the session variable for validity check
         if ($tokenData !== null) {
             if (count($tokenData) < 1) {
                 echo $_SESSION['error'] = $errorMessages[0]; // Display error message for invalid QR-Code
             } elseif ($tokenData[0]['used'] != 0) {
+                echo($$tokenData[0]);
                 echo $_SESSION['error'] = $errorMessages[1]; // Display error message for already used QR-Code
             } elseif ($tokenData[0]['tableNo'] != $tableNo) {
                 echo $_SESSION['error'] = $errorMessages[2]; // Display error message for QR-Code not registered for the table
